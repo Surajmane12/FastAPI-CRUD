@@ -8,6 +8,7 @@ from sqlalchemy import pool
 from app.core.config import settings
 from app.db.base import Base
 from app.models.task import Task  # noqa: F401
+from app.models.user import User
 
 config = context.config
 

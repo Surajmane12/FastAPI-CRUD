@@ -1,22 +1,26 @@
-from fastapi import FastAPI,HTTPException,status
-from app.api.routes.tasks.tasks import router as taskrouter
+
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-app=FastAPI(title="First FastAPI App")
 
-app.include_router(
-    taskrouter,
-    prefix="/api/v1"
-)
+from app.api.routes.tasks.tasks import router as taskrouter
+from app.api.routes.auth.auth import router as authrouter
 
+app = FastAPI(title="First FastAPI App")
+
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"]
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-@app.get("/health",tags=["Health"])
-def checkHealth():
-    return {"status":"healthy"}
+# Register routers
+app.include_router(taskrouter, prefix="/api/v1")
+app.include_router(authrouter, prefix="/api/v1")
 
 
-
-
+@app.get("/health", tags=["Health"])
+def check_health():
+    return {"status": "healthy"}
