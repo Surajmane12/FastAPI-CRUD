@@ -15,16 +15,16 @@ router=APIRouter(
 DBSession = Annotated[Session,Depends(get_db)]
 
 @router.post("",response_model=TaskRead,status_code=status.HTTP_201_CREATED)
-def create_task(task_data:TaskCreate,db:DBSession):
-    return task_service.create_task(db,task_data)
+def create_task(task_data:TaskCreate):
+    return task_service.create_task(task_data)
 
 @router.get("",response_model=List[TaskRead])
-def get_tasks(db:DBSession):
-    return task_service.get_tasks(db)
+def get_tasks():
+    return task_service.get_tasks()
 
 @router.get("/{task_id}",response_model=TaskRead)
-def get_tasks(db:DBSession,task_id:int):
-    task = task_service.get_task_by_id(db,task_id)
+def get_tasks(task_id:int):
+    task = task_service.get_task_by_id(task_id)
 
     if task is None:
         raise HTTPException(
@@ -34,12 +34,12 @@ def get_tasks(db:DBSession,task_id:int):
 
 
 @router.put("/{task_id}",response_model=TaskRead)
-def update_task(db:DBSession,task_id:int,taskdata:TaskUpdate):
-    return task_service.update_task(db,task_id,taskdata)
+def update_task(task_id:int,taskdata:TaskUpdate):
+    return task_service.update_task(task_id,taskdata)
 
 @router.delete("/{task_id}",status_code=status.HTTP_204_NO_CONTENT)
-def delete_task(db:DBSession,task_id:int):
-    deleted = task_service.delete_task(db,task_id)
+def delete_task(task_id:int):
+    deleted = task_service.delete_task(task_id)
 
     if not deleted:
         raise HTTPException(

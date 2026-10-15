@@ -1,21 +1,33 @@
-from pydantic import BaseModel, Field, ConfigDict
+
 from datetime import datetime
 
+from pydantic import BaseModel, ConfigDict, Field
+
+from app.schemas.usersummary import UserSummary
+
+
 class TaskCreate(BaseModel):
-    title:str=Field(min_length=3,max_length=100)
-    description:str=Field(default="",max_length=500)
-    completed:bool=False
+    title: str = Field(min_length=3, max_length=100)
+    description: str = Field(default="", max_length=500)
+    completed: bool = False
+    assigned_user_ids: list[int] = Field(min_length=1)
+
 
 class TaskUpdate(BaseModel):
-    title:str=Field(min_length=3,max_length=100)
-    description:str=Field(default="",max_length=500)
-    completed:bool=False
+    model_config = ConfigDict(extra="forbid")
+
+    title: str | None = Field(default=None, min_length=3, max_length=100)
+    description: str | None = Field(default=None, max_length=500)
+    completed: bool | None = None
+    assigned_user_ids: list[int] | None = Field(default=None, min_length=1)
+
 
 class TaskRead(BaseModel):
-    id:int
-    title:str
-    description:str
-    completed:bool
-    created_At:datetime
+    model_config = ConfigDict(from_attributes=True)
 
-model_config=ConfigDict(from_attribute=True)
+    id: int
+    title: str
+    description: str
+    completed: bool
+    created_At: datetime
+    assigned_user: list[UserSummary]

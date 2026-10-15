@@ -1,44 +1,147 @@
 
-
-from typing import List
-
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
+from app.db.session import sessionLocal
 from app.models.task import Task
-from app.schemas.task import TaskCreate,TaskRead, TaskUpdate
-from sqlalchemy.orm import Session
+from app.models.user import User
+from app.models.taskassignments import TaskAssignments
+from app.schemas.task import TaskCreate, TaskUpdate
 
-def create_task(db:Session,task_data:TaskCreate)->Task:
-    task = Task(**task_data.model_dump())
-    # model_dump -> converts the model type into dictionary type
-    # The above is the instance of your SQLAlchemy Task class.
-    # Similar to the belowed line: 
-    # task = Task(
-    #     title="Learn FastAPI",
-    #     description="Understand SQLAlchemy"
-    # )
 
-    db.add(task)
-    db.commit()
-    db.refresh(task)
 
-    return task
 
-def get_all_tasks(db:Session)->List[Task]:
-    query=select(Task).order_by(Task.id)
-    return list(db.scalars(query).all())
+def create(task_data: TaskCreate) -> Task:
+    with sessionLocal.begin() as db:
+        user_ids = set(task_data.assigned_user_ids)
 
-def get_task_by_id(db:Session,task_id:int)->Task | None:
-    query = select(Task).where(Task.id==task_id)
-    return db.scalars(query).one_or_none()
+        users = list(
+            db.scalars(
+                select(User).where(User.id.in_(user_ids))
+            ).all()
+        )
 
-def update_task(db:Session,task:Task,taskdata:TaskUpdate)->Task | None:
-    for field,value in taskdata.model_dump().items():
-        setattr(task,field,value)
-        db.commit()
-        db.refresh(task)
-        return task
+        if len(users) != len(user_ids):
+            raise ValueError("One or more assigned users do not exist.")
 
-def delete_task(db:Session,task:Task)->None:
-    db.delete(task)
-    db.commit()
+        task = Task(
+            **task_data.model_dump(exclude={"assigned_user_ids"})
+        )
+
+        task.assignments = [
+            TaskAssignments(user=user)
+            for user in users
+        ]
+
+        db.add(task)
+        db.flush()
+
+        query = (
+            select(Task)
+            .options(
+                selectinload(Task.assignments)
+                .selectinload(TaskAssignments.user)
+            )
+            .where(Task.id == task.id)
+        )
+
+        return db.scalar(query)
+def read() -> list[Task]:
+    with sessionLocal() as db:
+        query = (
+            select(Task)
+            .options(
+                selectinload(Task.assignments)
+                .selectinload(TaskAssignments.user)
+            )
+            .order_by(Task.id)
+        )
+
+        return list(db.scalars(query).all())
+
+
+def read_by_id(task_id: int) -> Task | None:
+    with sessionLocal() as db:
+        query = (
+            select(Task)
+            .options(
+                selectinload(Task.assignments)
+                .selectinload(TaskAssignments.user)
+            )
+            .where(Task.id == task_id)
+        )
+
+        return db.scalar(query)
+
+
+def update(
+    task_id: int,
+    taskdata: TaskUpdate,
+) -> Task | None:
+    with sessionLocal() as db:
+        try:
+            task = db.get(Task, task_id)
+
+            if task is None:
+                return None
+
+            data = taskdata.model_dump(exclude_unset=True)
+            user_ids = data.pop("assigned_user_ids", None)
+
+            for field, value in data.items():
+                setattr(task, field, value)
+
+            # Replace assignments only when provided
+            if user_ids is not None:
+                unique_ids = set(user_ids)
+
+                users = list(
+                    db.scalars(
+                        select(User).where(User.id.in_(unique_ids))
+                    ).all()
+                )
+
+                if len(users) != len(unique_ids):
+                    raise ValueError(
+                        "One or more assigned users do not exist."
+                    )
+
+                task.assignments = [
+                    TaskAssignments(user=user)
+                    for user in users
+                ]
+
+            db.commit()
+
+            query = (
+                select(Task)
+                .options(
+                    selectinload(Task.assignments)
+                    .selectinload(TaskAssignments.user)
+                )
+                .where(Task.id == task_id)
+            )
+
+            return db.scalar(query)
+
+        except Exception:
+            db.rollback()
+            raise
+
+
+def delete(task_id: int) -> bool:
+    with sessionLocal() as db:
+        try:
+            task = db.get(Task, task_id)
+
+            if task is None:
+                return False
+
+            db.delete(task)
+            db.commit()
+
+            return True
+
+        except Exception:
+            db.rollback()
+            raise
