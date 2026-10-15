@@ -1,10 +1,20 @@
 
+from typing import TYPE_CHECKING
+
 from sqlalchemy import Boolean, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.models.task import Task
+if TYPE_CHECKING:
+   
+    from app.models.taskassignments import TaskAssignments
 
-
+    assignments: Mapped[list["TaskAssignments"]] = relationship(
+        "TaskAssignments",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
 class User(Base):
     __tablename__ = "users"
 
@@ -35,4 +45,10 @@ class User(Base):
         Boolean,
         default=True,
         nullable=False,
+    )
+ 
+    assignments: Mapped[list["TaskAssignments"]] = relationship(
+        "TaskAssignments",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )

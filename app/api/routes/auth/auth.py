@@ -11,12 +11,11 @@ router=APIRouter(
     tags=["Auth"]
 )
 
-DBSession = Annotated[Session,Depends(get_db)]
 
 @router.post("",response_model=UserRead,status_code=status.HTTP_201_CREATED)
-def register_user(db:DBSession,user_data:UserCreate)->UserRead:
-    return auth_service.register_user(db,user_data)
+def register_user(user_data:UserCreate)->UserRead:
+    return auth_service.register_user(user_data)
 
 @router.post("/login",response_model=dict,status_code=status.HTTP_200_OK)
-def login_user(db:DBSession,user_data:UserLogin)->dict:
-    return auth_service.login_user(db,user_data)
+def login_user(user_data:UserLogin)->dict:
+    return auth_service.login_user(user_data)

@@ -2,6 +2,8 @@
 from pydantic import BaseModel, ConfigDict, EmailStr,Field,field_validator, model_validator
 import re
 
+from app.schemas.usersummary import UserSummary
+
 class UserCreate(BaseModel):
     username:str=Field(min_length=2,max_length=20)
     email:EmailStr=Field(min_length=2,max_length=30)
@@ -42,6 +44,7 @@ class UserRead(BaseModel):
     username:str
     email:EmailStr
     isactive:bool
+    users:UserSummary
     
     model_config = ConfigDict(from_attributes=True)
 
