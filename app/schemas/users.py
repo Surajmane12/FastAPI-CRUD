@@ -44,9 +44,7 @@ class UserRead(BaseModel):
     username:str
     email:EmailStr
     isactive:bool
-    users:UserSummary
-    
-    model_config = ConfigDict(from_attributes=True)
+   
 
 class UserLogin(BaseModel):
     identifier:str | None=None

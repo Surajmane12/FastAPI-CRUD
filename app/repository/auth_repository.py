@@ -20,7 +20,7 @@ def validate_user(user_email:str)->User|None:
         return db.scalar(query)
 
 
-def create(user_data:UserCreate)->User:
+def create(user_data:UserCreate)->UserRead:
     with sessionLocal() as db:
         user=User(**user_data.model_dump(exclude={"password"}),
               password=hash_password(user_data.password),)
@@ -28,6 +28,7 @@ def create(user_data:UserCreate)->User:
         db.add(user)
         db.commit()
         db.refresh(user)
+        print("User Create Response: ",user)
         return user
 
 def read(user_data:UserLogin)->dict:

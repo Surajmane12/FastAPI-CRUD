@@ -1,15 +1,17 @@
 
 
 from fastapi import HTTPException,status
-from requests import Session
 
-from app.schemas.users import UserCreate, UserLogin
+
+from app.schemas.users import UserCreate, UserLogin, UserRead
 from app.repository import auth_repository
 from app.core.security import verify_password, create_access_token
 from app.core.exceptions import CustomException
 
-def register_user(user_data:UserCreate):
+def register_user(user_data:UserCreate)->UserRead:
     user = auth_repository.validate_user(user_data.email)
+    print("User Validated: ",user)
+    print("User Data: ",user_data)
     if user:
         CustomException.call(
             message="Email Id Already Registered!!",
