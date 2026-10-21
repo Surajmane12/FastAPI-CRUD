@@ -6,13 +6,14 @@ from app.db.session import get_db
 from app.schemas.task import TaskCreate, TaskRead, TaskUpdate
 from app.services import task_service
 from app.models.task import Task
+from app.middleware.authMiddleware import get_current_user
 
 router=APIRouter(
     prefix="/tasks",
-    tags=["Tasks"]
+    tags=["Tasks"],
+    dependencies=[Depends(get_current_user)]
 )
 
-DBSession = Annotated[Session,Depends(get_db)]
 
 @router.post("",response_model=TaskRead,status_code=status.HTTP_201_CREATED)
 def create_task(task_data:TaskCreate):

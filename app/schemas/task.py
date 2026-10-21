@@ -4,6 +4,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.usersummary import UserSummary
+from app.schemas.subtask import SubTaskRead
 
 
 class TaskCreate(BaseModel):
@@ -31,3 +32,4 @@ class TaskRead(BaseModel):
     completed: bool
     created_At: datetime
     assigned_user: list[UserSummary]
+    subtasks:list[SubTaskRead]= Field(default_factory=list)

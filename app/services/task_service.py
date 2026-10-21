@@ -55,7 +55,7 @@ def update_task(task_id:int,taskdata:TaskUpdate)->Task | None:
     if task is None:
         return None
     
-    return task_repository.update(task,taskdata)
+    return task_repository.update(task_id,taskdata)
 
 def delete_task(task_id:int)->bool:
    task = task_repository.read_by_id(task_id)

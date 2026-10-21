@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.tasks.tasks import router as taskrouter
 from app.api.routes.auth.auth import router as authrouter
-
+from app.api.routes.subtasks.subtask import router as subtaskrouter
 app = FastAPI(title="First FastAPI App")
 
 # CORS configuration
@@ -20,6 +20,7 @@ app.add_middleware(
 # Register routers
 app.include_router(taskrouter, prefix="/api/v1")
 app.include_router(authrouter, prefix="/api/v1")
+app.include_router(subtaskrouter,prefix="/api/v1")
 
 
 @app.get("/health", tags=["Health"])

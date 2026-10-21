@@ -10,7 +10,7 @@ from app.db.base import Base
 from app.models.task import Task  # noqa: F401
 from app.models.user import User
 from app.models.taskassignments import TaskAssignments
-
+from app.models.subtask import SubTasks
 config = context.config
 
 config.set_main_option(
