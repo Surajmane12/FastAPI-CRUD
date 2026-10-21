@@ -5,8 +5,10 @@ from app.db.base import Base
 from typing import TYPE_CHECKING
 
 from app.models.taskassignments import TaskAssignments
+
 if TYPE_CHECKING:
     from app.models.user import User
+    from app.models.subtask import SubTasks
 
 class Task(Base):
 
@@ -41,8 +43,12 @@ class Task(Base):
         back_populates="task",
         cascade="all, delete-orphan",
     )
+    subtasks:Mapped[list["SubTasks"]]= relationship(
+        "SubTasks",
+        back_populates="task",
+        cascade="all, delete-orphan"
+    )
 
     @property
     def assigned_user(self):
         return [assignment.user for assignment in self.assignments]
-    
